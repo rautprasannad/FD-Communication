@@ -1,2 +1,2 @@
 # FD-Communication
-MATLAB script to evaluate outage probability of FD multi-user system
+MATLAB script to evaluate outage performance of a full-duplex based multi-user relaying system with absoulte channel power based scheduling scheme.
