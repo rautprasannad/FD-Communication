@@ -1,0 +1,347 @@
+%%%%%%  MATLAB script to simulate outage probability of multi-user FD system  %%%%%%%%%%%
+
+clc;
+clear all;
+Close all;
+
+%%%%%%%%%%%%   General Parameters   %%%%%%%%%%%%%%%%%
+
+AWGN=1;
+N=5;
+
+r1=1;
+r2=1;
+r=r1+r2;
+
+R1=(2^r1)-1;
+R2=(2^r2)-1;
+R=(2^(r))-1;
+
+%%%%%%%%%%%%   Rician Parameters   %%%%%%%%%%%%%%%%%
+
+K_rr_dB=1.15;  %in dB
+K_bi_dB=1.15;
+K_ai_dB=1.15;
+
+K_rr=10^(0.1*K_rr_dB);
+K_bi=10^(0.1*K_bi_dB);
+K_ai=10^(0.1*K_ai_dB);
+
+%%%%%%%%%%%%%%%
+
+theta_rr=45;
+theta_bi=45;
+theta_ai=45;
+
+% omega_rr_dB=-20;
+% omega_bi_dB=-20;
+% omega_ai_dB=-20;
+
+% omega_rr=10^(0.1*omega_rr_dB);
+% omega_bi=10^(0.1*omega_bi_dB);
+% omega_ai=10^(0.1*omega_ai_dB);
+
+
+
+%%%%%%%%
+
+V_1= 5;
+V_2= 10;
+k = 5;
+
+Fc = 1.9*10^9 ;
+Rs = 9.6*10^3 ;
+c = 3*10^8 ;
+
+rho1=besselj(0,(2*3.14*Fc*V_1*10*.44704)/(Rs*c));
+rho2=besselj(0,(2*3.14*Fc*V_2*10*.44704)/(Rs*c));
+
+cr1=rho1^(2*(k-1));
+cr2=rho2^(2*(k-1));
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+sigma_h_1i = [0.6224,0.6879,0.6393,0.6066,0.7132];
+sigma_h_2i = [0.6364,0.6663,0.7031,0.6538,0.7104];
+sigma_g_1i = [0.6592,0.6025,0.6056,0.5663,0.6029];
+sigma_g_2i = [0.6496,0.6636,0.6405,0.6295,0.7232];
+
+% sigma_E_h_1i = [0.00385,0.00477,0.00378,0.00453,0.00379];
+% sigma_E_h_2i = [0.00461,0.00451,0.00375,0.00343,0.00458];
+% sigma_E_g_1i = [0.00489,0.00365,0.00434,0.00387,0.00466];
+% sigma_E_g_2i = [0.00453,0.00333,0.00472,0.00497,0.00402];
+
+sigma_epsilon_h_1i = [0.00476,0.00417,0.00330,0.00339,0.00381];
+sigma_epsilon_h_2i = [0.00449,0.00465,0.00457,0.00363,0.00406];
+sigma_epsilon_g_1i = [0.00317,0.00322,0.00327,0.00435,0.00399];
+sigma_epsilon_g_2i = [0.00337,0.00399,0.00329,0.00310,0.00470];
+
+%a=sqrt(0.05);
+b=sqrt(0.5);
+
+sigma_E_h_1i = [b,b,b,b,b];
+sigma_E_h_2i = [b,b,b,b,b];
+sigma_E_g_1i = [b,b,b,b,b];
+sigma_E_g_2i = [b,b,b,b,b];
+% 
+% sigma_epsilon_h_1i = [b,b,b,b,b];
+% sigma_epsilon_h_2i = [b,b,b,b,b];
+% sigma_epsilon_g_1i = [b,b,b,b,b];
+% sigma_epsilon_g_2i = [b,b,b,b,b];
+
+
+% sigma_h_1i = 0.5 + (0.65-0.5).*rand(1,N);
+% sigma_h_2i = 0.5 + (0.65-0.5).*rand(1,N);
+% sigma_g_1i = 0.4 + (0.65-0.5).*rand(1,N);
+% sigma_g_2i = 0.5 + (0.65-0.5).*rand(1,N);
+% 
+% sigma_E_h_1i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_E_h_2i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_E_g_1i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_E_g_2i = 0.03 + (0.05-0.03).*rand(1,N);
+% 
+% sigma_epsilon_h_1i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_epsilon_h_2i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_epsilon_g_1i = 0.03 + (0.05-0.03).*rand(1,N);
+% sigma_epsilon_g_2i = 0.03 + (0.05-0.03).*rand(1,N);
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+P_ai_db=20;
+P_ai= 10^(0.1*P_ai_db);
+P_bi_db=20;
+P_bi= 10^(0.1*P_bi_db);
+Pr_db=20;
+Pr=10^(0.1*Pr_db);
+
+omega_rr_dB=-20;
+omega_rr=10^(0.1*omega_rr_dB);
+% omega_bi_dB=-20;
+% omega_bi=10^(0.1*omega_bi_dB);
+
+
+CDFZ=[];
+CDFZ1=[];
+
+start=-40;
+dx= 5;
+stop=10;
+
+for omega_ai_dB=start:dx:stop
+    omega_ai=10^(0.1*omega_ai_dB);
+    
+    %omega_rr=omega_ai;
+    omega_bi=omega_ai;
+    
+    v_rr=sqrt(K_rr*omega_rr);
+    v_bi=sqrt(K_bi*omega_bi);
+    v_ai=sqrt(K_ai*omega_ai);
+
+    lambda_rr=1/omega_rr;
+    lambda_bi=1/omega_bi;
+    lambda_ai=1/omega_ai;    
+    
+    
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    prod=1;
+    for i=1:N
+        
+    N0_R = ((1-cr1)*sigma_E_h_1i(i)^2*P_ai)+((1-cr2)*sigma_E_h_2i(i)^2*P_bi)+(cr1*sigma_epsilon_h_1i(i)^2*P_ai)+(cr2*sigma_epsilon_h_2i(i)^2*P_bi)+AWGN ;
+    N0_Ai = ((1-cr1)*sigma_E_g_1i(i)^2*P_ai)+(cr1*sigma_epsilon_g_1i(i)^2*P_ai)+AWGN;
+    N0_Bi = ((1-cr2)*sigma_E_g_2i(i)^2*P_bi)+(cr2*sigma_epsilon_g_2i(i)^2*P_bi)+AWGN;
+    
+    c1=(P_ai*cr1)/Pr;
+    c1_dash=(P_bi*cr2)/Pr;
+    c2=N0_R/Pr;
+    
+    c3=(Pr*cr1)/P_ai;
+    c3_dash=(Pr*cr2)/P_bi;
+    
+    c4=N0_Ai/P_ai;
+    c4_dash=N0_Bi/P_bi;
+    
+%     temp1=((1-cr1)*sigma_E_h_1i(i)^2)+((1-cr2)*sigma_E_h_2i(i)^2)+(cr1*sigma_epsilon_h_1i(i)^2)+(cr2*sigma_epsilon_h_2i(i)^2);    
+%     temp2=((1-cr1)*sigma_E_g_1i(i)^2)+(cr1*sigma_epsilon_g_1i(i)^2);
+%     temp3=((1-cr2)*sigma_E_g_2i(i)^2)+(cr2*sigma_epsilon_g_2i(i)^2);
+%     
+%     c1=cr1;
+%     c1_dash=cr2;
+%     c2=temp1;
+%     c3=cr1;
+%     c3_dash=cr2;
+%     c4=temp2;
+%     c4_dash=temp3;
+    
+        
+        omega_1i(i) = 2*(sigma_h_1i(i))^2;
+        omega_2i(i) = 2*(sigma_h_2i(i))^2;
+        g_omega_1i(i) = 2*(sigma_g_1i(i))^2;
+        g_omega_2i(i) = 2*(sigma_g_2i(i))^2;
+
+        lambda_1i(i)=1/omega_1i(i);
+        lambda_2i(i)=1/omega_2i(i);
+        g_lambda_1i(i)=1/g_omega_1i(i);
+        g_lambda_2i(i)=1/g_omega_2i(i);
+    
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+   gamma_bar_ar=(c1*lambda_rr)/(R1*lambda_1i(i)*(1+(c2*lambda_rr)));
+   gamma_bar_rb=(c3_dash*lambda_bi)/(R1*g_lambda_2i(i)*(1+(c4_dash*lambda_bi)));
+   gamma_bar_ra=(c3*lambda_ai)/(R2*g_lambda_1i(i)*(1+(c4*lambda_ai)));
+   gamma_bar_br=(c1_dash*lambda_rr)/(R2*lambda_2i(i)*(1+(c2*lambda_rr)));
+
+   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    n1=exp(-lambda_rr*v_rr^2)*exp(-(lambda_rr*c2)/(gamma_bar_ar*(1+(lambda_rr*c2))))*exp((lambda_rr*v_rr^2)/(1+((1)/((gamma_bar_ar*(1+(lambda_rr*c2)))))));
+    n2=exp(-lambda_bi*v_bi^2)*exp(-(lambda_bi*c4)/(gamma_bar_rb*(1+(lambda_bi*c4))))*exp((lambda_bi*v_bi^2)/(1+((1)/((gamma_bar_rb*(1+(lambda_bi*c4)))))));
+    n3=exp(-lambda_ai*v_ai^2)*exp(-(lambda_ai*c4)/(gamma_bar_ra*(1+(lambda_ai*c4))))*exp((lambda_ai*v_ai^2)/(1+((1)/((gamma_bar_ra*(1+(lambda_ai*c4)))))));
+    n4=exp(-lambda_rr*v_rr^2)*exp(-(lambda_rr*c2)/(gamma_bar_br*(1+(lambda_rr*c2))))*exp((lambda_rr*v_rr^2)/(1+((1)/((gamma_bar_br*(1+(lambda_rr*c2)))))));
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    d1=(1+((1)/((gamma_bar_ar*(1+(lambda_rr*c2))))));
+    d2=(1+((1)/((gamma_bar_rb*(1+(lambda_bi*c4))))));
+    d3=(1+((1)/((gamma_bar_ra*(1+(lambda_ai*c4))))));
+    d4=(1+((1)/((gamma_bar_br*(1+(lambda_rr*c2))))));
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    F_ar=1-(n1/d1);
+    F_rb=1-(n2/d2);
+    F_ra=1-(n3/d3);
+    F_br=1-(n4/d4);
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    n5=exp(-lambda_rr*v_rr^2)*exp(-((lambda_rr*c2*((gamma_bar_ar^-1)+(gamma_bar_br^-1)))/(1+(lambda_rr*c2))))*exp((lambda_rr*v_rr^2)/(1+(((((gamma_bar_ar^-1)+(gamma_bar_br^-1)))/(1+(lambda_rr*c2))))));
+    d5=(1+(((((gamma_bar_ar^-1)+(gamma_bar_br^-1)))/(1+(lambda_rr*c2)))));
+    exp_term=n5/d5;
+    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    F_ar_rb=F_ar+((1-F_ar)*F_rb);
+    F_ra_br=F_ra+((1-F_ra)*F_br);
+    F_intersection=(F_ra*F_rb)+((1-(F_rb))*F_ra*F_ar)+((1-(F_ra))*F_rb*F_br)-(((1-F_rb)*(1-F_ra))*(1-F_ar-F_br-exp_term));
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    cdfz=F_ar_rb+F_ra_br-F_intersection;        
+    prod=prod*cdfz;
+    
+    end
+    
+    P_out= prod;
+    CDFZ=[CDFZ P_out];  
+    
+end
+
+omega_ai_dB=start:dx:stop;
+semilogy(omega_ai_dB,CDFZ,'k*');
+hold on;
+% semilogy(Ps_db,CDFZ1,'*r');
+% hold on;
+
+%%%%%%%%%%%%%%%%%% simulation %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+sample = 10000;
+
+
+op = [];
+op1 = [];
+count = 0;
+count1 = 0;
+i=0;
+dx=4;
+for Ps_db=start:dx:stop
+    Ps_db
+    Ps=10^(0.1*Ps_db);   
+    %Pr=Ps;
+    
+    c1=Ps/Pr;
+    c2=N0/Pr;
+    c3=Pr/Ps;
+    c4=N0/Ps;
+    
+            o1=[];
+            o2=[];
+            OMEGA=[];
+            for S = 1:sample
+                      %i= randi(N);
+                      for j=1:N
+                     
+                                omega_1i = 0.6 + (0.85-0.6).*rand(1,1);
+                                omega_2i = 0.6 + (0.85-0.6).*rand(1,1);
+                                g_omega_1i = 0.6 + (0.85-0.6).*rand(1,1);
+                                g_omega_2i = 0.6 + (0.85-0.6).*rand(1,1);
+
+                                X1 = random('norm', 0, sqrt(omega_1i/2)); %generate normal RV 1
+                                Y1 = random('norm', 0, sqrt(omega_1i/2)); %generate normal RV 2
+                                h_1 = sqrt(X1*X1 + Y1*Y1);
+                                X2 = random('norm', 0, sqrt(omega_2i/2)); %generate normal RV 1
+                                Y2 = random('norm', 0, sqrt(omega_2i/2)); %generate normal RV 2
+                                h_2 = sqrt(X2*X2 + Y2*Y2);
+                                X3 = random('norm', v_rr*cos(theta_rr), sqrt(omega_rr/2)); %generate normal RV 1
+                                Y3 = random('norm', v_rr*sin(theta_rr), sqrt(omega_rr/2)); %generate normal RV 2
+                                h_rr = sqrt(X3*X3 + Y3*Y3);
+                                X4 = random('norm', v_bi*cos(theta_bi), sqrt(omega_bi/2)); %generate normal RV 1
+                                Y4 = random('norm', v_bi*sin(theta_bi), sqrt(omega_bi/2)); %generate normal RV 2
+                                h_bi = sqrt(X4*X4 + Y4*Y4);
+                                X5 = random('norm', v_ai*cos(theta_ai), sqrt(omega_ai/2)); %generate normal RV 1
+                                Y5 = random('norm', v_ai*sin(theta_ai), sqrt(omega_ai/2)); %generate normal RV 2
+                                h_ai = sqrt(X5*X5 + Y5*Y5);
+
+                                X6 = random('norm', 0, sqrt(g_omega_1i/2)); %generate normal RV 1
+                                Y6 = random('norm', 0, sqrt(g_omega_1i/2)); %generate normal RV 2
+                                g_1 = sqrt(X6*X6 + Y6*Y6);
+                                X7 = random('norm', 0, sqrt(g_omega_2i/2)); %generate normal RV 1
+                                Y7 = random('norm', 0, sqrt(g_omega_2i/2)); %generate normal RV 2
+                                g_2 = sqrt(X7*X7 + Y7*Y7);
+
+                                gamma_AR(j) = (c1*(h_1*h_1))/((h_rr*h_rr)+c2);
+                                gamma_BR(j) = (c1*(h_2*h_2))/((h_rr*h_rr)+c2);
+                                gamma_RB(j) = (c3*(g_2*g_2))/((h_bi*h_bi)+c4);
+                                gamma_RA(j) = (c3*(g_1*g_1))/((h_ai*h_ai)+c4);
+
+                                gamma_AR_cap(j) =gamma_AR(j)/R1 ;
+                                gamma_RB_cap(j) =gamma_RB(j)/R1 ;
+                                gamma_BR_cap(j) =gamma_BR(j)/R2 ;
+                                gamma_RA_cap(j) =gamma_RA(j)/R2 ;
+ 
+                                omega_i1=min(gamma_AR_cap(j),gamma_RB_cap(j));                              
+                                omega_i2=min(gamma_RA_cap(j),gamma_BR_cap(j));                                
+                                final_min(j)=min(omega_i1,omega_i2);                                
+%                     
+                       end
+                      
+                      [max_num,i] = max(final_min(:));
+                    
+%                     A=min(gamma_AR(i),gamma_RB(i));
+%                     B=min(gamma_RA(i),gamma_BR(i));
+%                     gamma_MAC=gamma_AR(i)+gamma_BR(i);
+                    
+                    A1=min(gamma_AR_cap(i),gamma_RB_cap(i));
+                    B1=min(gamma_RA_cap(i),gamma_BR_cap(i));
+                    gamma_MAC1=gamma_AR_cap(i)+gamma_BR_cap(i);
+                        
+%                         if A<R1 || B<R2 || gamma_MAC<R
+%                             count = count+1;
+%                         end
+                        
+                        if A1<1 || B1<1 || gamma_MAC1<1
+                            count = count+1;
+                        end
+                        
+                        if A1<1 || B1<1 
+                            count1 = count1+1;
+                        end
+                        
+        
+            end
+    op = [op,count/sample]; 
+    count = 0;
+    op1 = [op1,count1/sample]; 
+    count1 = 0;
+
+end
+
+Ps_db=start:dx:stop;
+
+semilogy(Ps_db,op,'*b');
+hold on;
+semilogy(Ps_db,op1,'or');
+hold on;
